@@ -3,13 +3,15 @@
 .data
 
 .bss
-	.lcomm BUF 1024
+	.lcomm BUF 16384
 .text
 
 format_num:  // format value in r0 to BUF in decimal
+    // input: r0
+    // output: (data in BUF), r5 (index updated)
+    // clobbers r0, r1, r2
     push {lr}
 
-    ldr r4, =BUF	// pointer
 1:
     mov r1, #10
     udiv r2, r0, r1
@@ -28,19 +30,22 @@ format_num:  // format value in r0 to BUF in decimal
     pop {pc}
 
 reverse_bytes:
+    // input: r5 bytes in BUF (r4) to handle
+    // output: (data in BUF)
+    // clobbers r0, r1, r2, r3
     push {lr}
-    ldr r4, =BUF	// begin
+    mov r2, r4		// head
     add r3, r4, r5
-    sub r3, #1		// end
+    sub r3, #1		// tail
 1:
-    cmp r4, r3
+    cmp r2, r3
     bge done
-    // swap [r4] and [r3]
-    ldrb r0, [r4]
+    // swap [r2] and [r3]
+    ldrb r0, [r2]
     ldrb r1, [r3]
-    strb r1, [r4]
+    strb r1, [r2]
     strb r0, [r3]
-    add r4, #1
+    add r2, #1
     sub r3, #1
     b 1b
 done:
@@ -110,8 +115,8 @@ _start:
 read:
    // read a block of data
     mov r0, #0		// fd (stdin)
-    ldr r1, =BUF	// pointer
-    mov r2, #1024
+    mov r1, r4		// buffer
+    mov r2, #16384
     mov r7, #3  // syscall 3 - read
     svc #0
     
@@ -131,7 +136,6 @@ read:
 print:
     // print values
 
-    ldr r4, =BUF   // TODO: check if r4 accidentlly used, initialize just once
     mov r5, #0 // re-use buffer
 
     mov r1, #'\n'  // start with newline.. it'll be reversed
@@ -160,7 +164,7 @@ print:
     
     // write output
     mov r0, #1 // fd
-    ldr r1, =BUF
+    mov r1, r4
     mov r2, r5
     mov r7, #4  // syscall 4 - write
     svc #0
