@@ -55,7 +55,6 @@ update_counters:
     // update total byte count
     add r6, r5
 
-    mov r2, #1		// set to 1 when whitespace, otherwise 0
     mov r1, #0 		// index
     mov r3, #0 		// temp
 1:
@@ -72,14 +71,12 @@ update_counters:
     cmp r0, #'\t'
     moveq r3, #1
 
-    // if r3==0 && r2==1
+    // if r3==0 && r10==1
     // then count as a new word
-    cmp r3, r2
+    cmp r3, r10
     addlt r9, #1
 
-    // TODO: consider if a word is split between 2 read() calls (should make r2 a global var)
-
-    mov r2, r3
+    mov r10, r3
     mov r3, #0
 
     add r1, #1
@@ -98,6 +95,8 @@ _start:
     // (r7 reserved for syscall no)
     // r8 linefeed count
     // r9 word count
+    // r10 set to 1 when whitespace, otherwise 0
+
     
     // initialization
     ldr r4, =BUF
@@ -106,6 +105,7 @@ _start:
    // skip r7
     mov r8, #0
     mov r9, #0
+    mov r10, #1		// make the 1st character to trigger word counter
 
 read:
    // read a block of data
