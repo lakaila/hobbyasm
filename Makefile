@@ -1,5 +1,5 @@
 
-all: wc args
+all: wc args printenv
 
 wc: wc.o
 	ld -s -o $@ $^
@@ -7,8 +7,11 @@ wc: wc.o
 args: args.o
 	ld -s -o $@ $^
 
+printenv: printenv.o
+	ld -s -o $@ $^
+
 %.o:%.S
 	as -g -o $@ $^
 
 clean:
-	rm -f *.o wc args
+	rm -f *.o wc args printenv
