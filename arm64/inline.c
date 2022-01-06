@@ -21,7 +21,7 @@ size_t strlen_asm(const char *str)
         "1: add %[RET], %[RET], #1;"
         "2: ldrb w1, [%[P]], #1;"
         "cmp w1, wzr;"
-        "bne 1b;"
+        "b.ne 1b;"
         : [RET] "+r"(len)
         : [P] "r"(str), "m"(*(const char(*)[])str)
         : "w1");
@@ -34,7 +34,7 @@ size_t strlen_asm2(const char *str)
     asm("mov %[RET], %[P];"
         "1: ldrb w1, [%[P]], #1;"
         "cmp w1, wzr;"
-        "bne 1b;"
+        "b.ne 1b;"
         "sub %[RET], %[P], %[RET];"
         "sub %[RET], %[RET], #1;"
         : [RET] "+r"(len)
