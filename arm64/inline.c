@@ -49,8 +49,7 @@ uint32_t crc32(const char *str)
     asm("b 2f;"
         "1: crc32b %w[CRC], %w[CRC], w1;"
         "2: ldrb w1, [%[P]], #1;"
-        "cmp w1, wzr;"
-        "bne 1b;"
+        "cbnz w1, 1b;"
         : [CRC] "+r"(crc)
         : [P] "r"(str), "m"(*(const char(*)[])str)
         : "w1");
@@ -63,8 +62,7 @@ uint32_t crc32c(const char *str)
     asm("b 2f;"
         "1: crc32cb %w[CRC], %w[CRC], w1;"
         "2: ldrb w1, [%[P]], #1;"
-        "cmp w1, wzr;"
-        "bne 1b;"
+        "cbnz w1, 1b;"
         : [CRC] "+r"(crc)
         : [P] "r"(str), "m"(*(const char(*)[])str)
         : "w1");
