@@ -69,6 +69,23 @@ uint32_t crc32c(const char *str)
     return crc ^ 0xFFFFFFFF;
 }
 
+uint32_t crc32bin(const char *ptr, size_t len)
+{
+    uint32_t crc = 0xFFFFFFFF;
+    asm("cmp %[LEN], xzr;"
+        "b 1f;"
+        "2: subs %[LEN], %[LEN], #1;"
+        "1: b.eq done;"
+        "ldrb w1, [%[P]], #1;"
+        "crc32b %w[CRC], %w[CRC], w1;"
+        "b 2b;"
+        "done:"
+        : [CRC] "+r"(crc)
+        : [P] "r"(ptr), "m"(*(const char(*)[])ptr), [LEN] "r"(len)
+        : "w1");
+    return crc ^ 0xFFFFFFFF;
+}
+
 int main()
 {
     puts("Testing some inline assembly");
@@ -79,6 +96,7 @@ int main()
     printf("strlen=%zu\n", strlen_asm2("d aidaidadiadiajdoaijoaiod"));
     printf("crc32(aaa)=%X crc32c=%x\n", crc32("aaa"), crc32c("aaa"));
     printf("crc32(Test)=%X crc32c=%x\n", crc32("Test"), crc32c("Test"));
+    printf("crc32bin(Test)=%X\n", crc32bin("Test", 4));
     printf("crc32(1234567890)=%X crc32c=%x\n", crc32("1234567890"), crc32c("1234567890"));
     printf("crc32(The quick..)=%X\n", crc32("The quick brown fox jumps over the lazy dog"));
 }
