@@ -80,8 +80,8 @@ uint32_t crc32bin(const char *ptr, size_t len)
         "crc32b %w[CRC], %w[CRC], w1;"
         "b 2b;"
         "3:"
-        : [CRC] "+r"(crc), [P] "+r"(ptr)
-        : "m"(*(const char(*)[])ptr), [LEN] "r"(len)
+        : [CRC] "+r"(crc), [P] "+r"(ptr), [LEN] "+r"(len)
+        : "m"(*(const char(*)[])ptr)
         : "w1");
     return crc ^ 0xFFFFFFFF;
 }
