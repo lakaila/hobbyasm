@@ -86,9 +86,15 @@ uint32_t crc32bin(const char *ptr, size_t len)
     return crc ^ 0xFFFFFFFF;
 }
 
+void breakpoint()
+{
+    asm("brk #55");
+}
+
 int main()
 {
     puts("Testing some inline assembly");
+    //breakpoint();
     printf("1000+567=%d\n", add_asm(1000, 567));
     printf("1000+567=%d\n", add_c(1000, 567));
     printf("strlen=%zu\n", strlen_asm2("sadaadads"));
