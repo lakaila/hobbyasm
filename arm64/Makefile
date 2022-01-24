@@ -1,6 +1,6 @@
 
 #PROGS := wc args printenv argc
-PROGS := argc inline crc32 callasm
+PROGS := argc inline crc32 callasm wc
 
 CFLAGS := -g -Wall -march=armv8-a+crc
 #CFLAGS := -O3 -Wall
