@@ -71,7 +71,6 @@ update_counters:
     b 3f
 2:
     // check for other whitespace (' ', \t)
-    //moveq r3, #1
     cmp w0, #' '
     b.ne 4f
     mov w3, #1
@@ -83,9 +82,9 @@ update_counters:
     // if r3==0 && r10==1
     // then count as a new word
     cmp w3, w10
-    b.ge 5f
-    add x9, x9, #1
-5:
+    cset x2, lt		// x2 is 1 or 0
+    add x9, x9, x2
+
     mov w10, w3
     mov w3, #0
 
