@@ -79,6 +79,18 @@ update_counters:
     b.ne 3f
     mov w3, #1
 3:
+    cmp w0, #11 // vertical tab
+    b.ne 5f
+    mov w3, #1
+5:
+    cmp w0, #12 // form feed
+    b.ne 6f
+    mov w3, #1
+6:
+    cmp w0, #13 // carriage return
+    b.ne 7f
+    mov w3, #1
+7:
     // if r3==0 && r10==1
     // then count as a new word
     cmp w3, w10
