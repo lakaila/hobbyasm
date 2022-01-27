@@ -70,27 +70,18 @@ update_counters:
     mov w3, #1		// is whitespace
     b 3f
 2:
-    // check for other whitespace (' ', \t)
+    // check for other whitespace, set w3=1 if found
     cmp w0, #' '
-    b.ne 4f
-    mov w3, #1
-4:
+    cinc w3, w3, eq
     cmp w0, #'\t'
-    b.ne 3f
-    mov w3, #1
-3:
+    cinc w3, w3, eq
     cmp w0, #11 // vertical tab
-    b.ne 5f
-    mov w3, #1
-5:
+    cinc w3, w3, eq
     cmp w0, #12 // form feed
-    b.ne 6f
-    mov w3, #1
-6:
+    cinc w3, w3, eq
     cmp w0, #13 // carriage return
-    b.ne 7f
-    mov w3, #1
-7:
+    cinc w3, w3, eq
+3:
     // if r3==0 && r10==1
     // then count as a new word
     cmp w3, w10
