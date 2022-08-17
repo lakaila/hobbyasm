@@ -1,6 +1,6 @@
 
 #PROGS := wc args printenv argc
-PROGS := argc inline crc32 callasm wc
+PROGS := argc inline crc32 crc32opt callasm wc
 
 CFLAGS := -g -Wall -march=armv8-a+crc
 #CFLAGS := -O3 -Wall
@@ -15,6 +15,7 @@ argc: argc.o
 printenv: printenv.o
 inline:
 crc32:
+crc32opt:
 callasm: functions.h functions.o
 
 % : %.o
