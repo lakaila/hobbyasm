@@ -1,5 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
+#include <assert.h>
 
 int32_t add_asm(int32_t a, int32_t b)
 {
@@ -143,6 +145,50 @@ uint32_t crc32bin_64(const char *ptr, size_t len)
     return crc ^ 0xFFFFFFFF;
 }
 
+uint32_t crc32opt(const char *ptr, size_t len)
+{
+    size_t len1 = (8-((size_t)ptr & 7)) & 7;
+    if (len1 > len) {
+	len1 = len;
+    }
+    size_t len2 = (len - len1) & 0xFFFFFFFFFFFFFF8;
+    size_t len3 = len - len2 - len1;
+
+    //printf("len %zu -> %zu, %zu, %zu\n", len, len1, len2, len3);
+    //assert(len1+len2+len3==len);
+    
+    uint32_t crc = 0xFFFFFFFF;
+    asm( // unaligned part (if ptr is not aligned)
+	"cmp %[L1], xzr;"
+        "b 1f;"
+        "2: subs %[L1], %[L1], #1;"
+        "1: b.eq 3f;"
+        "ldrb w1, [%[P]], #1;"
+        "crc32b %w[CRC], %w[CRC], w1;"
+        "b 2b;"
+        "3:" // then 64-bit aligned part
+	"cmp %[L2], xzr;"
+        "b 4f;"
+        "5: subs %[L2], %[L2], #8;"
+        "4: b.eq 6f;"
+        "ldr x1, [%[P]], #8;"
+        "crc32x %w[CRC], %w[CRC], x1;"
+        "b 5b;"
+        "6:" // finally possible remainder
+	"cmp %[L3], xzr;"
+        "b 7f;"
+        "8: subs %[L3], %[L3], #1;"
+        "7: b.eq 9f;"
+        "ldrb w1, [%[P]], #1;"
+        "crc32b %w[CRC], %w[CRC], w1;"
+        "b 8b;"
+        "9:"
+        : [CRC] "+r"(crc), [P] "+r"(ptr), [L1] "+r"(len1), [L2] "+r"(len2), [L3] "+r"(len3)
+        : "m"(*(const char(*)[])ptr)
+        : "x1");
+    return crc ^ 0xFFFFFFFF;
+}
+
 void breakpoint()
 {
     asm("brk #55");
@@ -151,6 +197,8 @@ void breakpoint()
 int main()
 {
     puts("Testing some inline assembly");
+
+    const char *fox = "The quick brown fox jumps over the lazy dog";
     //breakpoint();
     printf("1000+567=%d\n", add_asm(1000, 567));
     printf("1000+567=%d\n", add_c(1000, 567));
@@ -164,10 +212,19 @@ int main()
     printf("crc32c(Test)=%X\n", crc32c("Test"));
     printf("crc32bin(Test)=%X\n", crc32bin("Test", 4));
     printf("crc32(1234567890)=%X crc32c=%x\n", crc32("1234567890"), crc32c("1234567890"));
-    printf("crc32(The quick..)=%X\n", crc32("The quick brown fox jumps over the lazy dog"));
+    printf("crc32(The quick..)=%X\n", crc32(fox));
     printf("crc32bin_16(Test)=%X\n", crc32bin_16("Test", 4));
     printf("crc32bin_32(Test)=%X\n", crc32bin_32("Test", 4));
     printf("crc32bin_16(TestTest)=%X\n", crc32bin_16("TestTest", 8));
     printf("crc32bin_32(TestTest)=%X\n", crc32bin_32("TestTest", 8));
     printf("crc32bin_64(TestTest)=%X\n", crc32bin_64("TestTest", 8));
+    char *teststr = "TestTestTestTestTestTestTest";
+    printf("crc32(teststr)=%X\n", crc32(teststr));
+    printf("crc32opt(teststr,4)=%X\n", crc32opt(teststr,4));
+    printf("crc32opt(teststr+4,4)=%X\n", crc32opt(teststr+4,4));
+    printf("crc32opt(teststr+1,4)=%X\n", crc32opt(teststr+1,4));
+    printf("crc32opt(teststr+7,4)=%X\n", crc32opt(teststr+7,4));
+    printf("crc32opt(teststr,8)=%X\n", crc32opt(teststr,8));
+    printf("crc32opt(teststr)=%X\n", crc32opt(teststr, strlen(teststr)));
+    printf("crc32opt(The quick..)=%X\n", crc32opt(fox, strlen(fox)));
 }
