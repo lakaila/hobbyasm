@@ -1,11 +1,14 @@
 
-PROGS := argc
+PROGS := argc inline
+
+CFLAGS := -masm=intel
 
 all: ${PROGS}
 
 #wc: wc.o
 #args: args.o
 argc: argc.o
+inline:
 #printenv: printenv.o
 
 % : %.o
