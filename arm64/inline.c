@@ -145,6 +145,42 @@ uint32_t crc32bin_64(const char *ptr, size_t len)
     return crc ^ 0xFFFFFFFF;
 }
 
+uint32_t crc32opt2(const char *ptr, size_t len)
+{
+    // same as crc32opt but less asm, more C
+
+    size_t len1 = (8-((size_t)ptr & 7)) & 7;
+    if (len1 > len) {
+	len1 = len;
+    }
+    size_t len2 = (len - len1) & 0xFFFFFFFFFFFFFF8;
+    size_t len3 = len - len2 - len1;
+
+    uint32_t crc = 0xFFFFFFFF;
+
+    for (int i = 0; i < len1; ++i){
+	const char ch = *ptr++;
+	asm(
+            "crc32b %w[CRC], %w[CRC], %w[CH];"
+	   : [CRC] "+r"(crc) : [CH] "r" (ch) :);
+    }
+    uint64_t *ptr64 = (uint64_t*)ptr;
+    for (int i = 0; i < len2; i+=8){
+	const uint64_t data = *ptr64++;
+	asm(
+            "crc32x %w[CRC], %w[CRC], %[D];"
+	   : [CRC] "+r"(crc) : [D] "r" (data) :);
+    }
+    ptr = (char*)ptr64;
+    for (int i = 0; i < len3; ++i){
+	const char ch = *ptr++;
+	asm(
+            "crc32b %w[CRC], %w[CRC], %w[CH];"
+	   : [CRC] "+r"(crc) : [CH] "r" (ch) :);
+    }
+    return crc ^ 0xFFFFFFFF;
+}
+
 uint32_t crc32opt(const char *ptr, size_t len)
 {
     size_t len1 = (8-((size_t)ptr & 7)) & 7;
@@ -227,4 +263,8 @@ int main()
     printf("crc32opt(teststr,8)=%X\n", crc32opt(teststr,8));
     printf("crc32opt(teststr)=%X\n", crc32opt(teststr, strlen(teststr)));
     printf("crc32opt(The quick..)=%X\n", crc32opt(fox, strlen(fox)));
+    printf("crc32opt2(teststr)=%X\n", crc32opt2(teststr, strlen(teststr)));
+    printf("crc32opt2(The quick..)=%X\n", crc32opt2(fox, strlen(fox)));
+    printf("crc32opt2(Test)=%X\n", crc32opt2("Test", 4));
+    printf("crc32opt2(TestTest)=%X\n", crc32opt2("TestTest", 8));
 }
