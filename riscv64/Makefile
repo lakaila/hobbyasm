@@ -1,5 +1,5 @@
 
-PROGS := argc
+PROGS := argc hello
 
 CFLAGS := -g -Wall #-march=rv64gc
 #CFLAGS := -O3 -Wall
@@ -15,6 +15,7 @@ all: ${PROGS}
 #LDFLAGS := -s  #strip
 
 argc: argc.o
+hello: hello.o
 
 % : %.o
 	${LD} ${LDFLAGS} -o $@ $^
