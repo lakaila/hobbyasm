@@ -5,7 +5,7 @@ Just for fun. I'll start with "wc" and see
 if more gets done.
 
 * Targeting Linux
-* First 32-bit ARM code (64-bit later)
+* Small examples of ARM32, ARM64, x86, x64, rv64 code
 * GNU toolchain (as,ld,gcc)
 * Not intented to be actually used
 * If it doesn't "make" then it's not work
