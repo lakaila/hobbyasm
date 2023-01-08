@@ -1,7 +1,8 @@
 
-PROGS := argc hello
+PROGS := argc hello inline
 
-CFLAGS := -g -Wall #-march=rv64gc
+MARCH := -march=rv64gc
+CFLAGS := -g -Wall ${MARCH}
 #CFLAGS := -O3 -Wall
 
 # For cross-compilation (TODO: get a native dev env)
@@ -17,11 +18,14 @@ all: ${PROGS}
 argc: argc.o
 hello: hello.o
 
+inline: LDFLAGS = -static # works with user mode qemu-riscv64
+inline:
+
 % : %.o
 	${LD} ${LDFLAGS} -o $@ $^
 
 %.o:%.S
-	${AS} -g -o $@ $^
+	${AS} ${MARCH} -g -o $@ $^
 
 clean:
 	rm -f *.o ${PROGS}
