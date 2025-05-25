@@ -1,4 +1,5 @@
 .text
+.align 4
 .globl _start
 _start:
 # write(0, (ptr), 6)
